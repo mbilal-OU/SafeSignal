@@ -1,165 +1,89 @@
-<div align="center">
+<p align="center"><img src="assets/overview.svg" width="100%" alt="SafeSignal schematic of drug-event reporting table and reporting odds ratio, not safety findings."/></p>
 
-# SafeSignal
-### Pharmacovigilance · Adverse-event reporting analytics
+> **PHARMACOVIGILANCE / EVIDENCE DISCIPLINE**  
+> **SafeSignal** investigates spontaneous adverse-event reporting patterns through auditable counts, disproportionality statistics, and careful interpretation.
 
-**Real-world data · Reproducible analytics · Industry-focused learning**
+[Read the safety boundary](#safety-boundary) · [Screening design](#screening-design) · [Statistics primer](#statistics-primer) · [Evidence checklist](#evidence-checklist)
 
-![Status](https://img.shields.io/badge/status-planning-64748b?style=flat-square)
-![Python](https://img.shields.io/badge/Python-learning%20path-3776AB?style=flat-square&logo=python&logoColor=white)
-![SQL](https://img.shields.io/badge/SQL-planned-336791?style=flat-square)
-![Dataset](https://img.shields.io/badge/data-public%20source-7c3aed?style=flat-square)
+> [!CAUTION]
+> **Not a clinical decision tool.** Spontaneous reports are not proof of drug causality, and they do not provide valid incidence rates. No actual reports have been analyzed in this repository yet; the illustration above is conceptual.
 
-[Why this project?](#why-this-project) · [Research questions](#research-questions) · [Learning roadmap](#learning-roadmap) · [Data](#data-source) · [Interview case](#interview-case)
+## Safety boundary
 
-</div>
+The research question is deliberately narrow:
 
-> [!IMPORTANT]
-> **Project stage: planning.** This repository defines a learning and analysis plan, not completed research. No dataset has been acquired or analyzed here yet. We will publish results only after running and verifying the code.
+**For a predefined drug and event, is the combination reported disproportionately compared with a defined reference set—and does that pattern survive basic sensitivity checks?**
 
-## Why this project?
+A detected signal would be a reason for **further evaluation**, not a conclusion that the medicine caused the event.
 
-SafeSignal explores publicly reported adverse events, data quality, and statistical disproportionality. It is designed as a learning and signal-screening analysis, **not** a clinical safety or causal-inference tool.
+| This project can explore | This project cannot establish |
+|---|---|
+| Reporting patterns in selected FAERS data | Causal adverse drug reactions |
+| Differences in drug–event reporting proportions | Absolute adverse-event risk |
+| Sensitivity to comparison-set definitions | Treatment recommendations |
+| Missingness and possible duplicates | Clinical safety of an individual patient |
 
-**Decision problem:** Which drug–event combinations appear disproportionately in spontaneous reports, and how robust are those patterns to data-quality choices?
-
-## Research questions
-
-1. How complete and consistent are the fields used to identify drugs and events?
-2. What reporting patterns change across time and selected comparison groups?
-3. How do reporting odds ratios behave in small versus large report counts?
-4. How do inclusion rules and potential duplicate reports change conclusions?
-
-## At a glance
-
-| Dimension | Scope |
-|:--|:--|
-| Industry | Pharmacovigilance |
-| Source | [openFDA — Drug Adverse Events API](https://open.fda.gov/apis/drug/event/) |
-| Data type | Public, observational records |
-| Analytical approach | Descriptive analysis first; statistical modeling only when justified |
-| Key outcome | Transparent, reproducible findings—not a performance score alone |
-| Current stage | **Planned — no reported results** |
-
-## Analysis workflow
+## Screening design
 
 ```mermaid
-flowchart LR
-  A["Define question"] --> B["Retrieve public data"]
-  B --> C["Validate & clean"]
-  C --> D["Explore patterns"]
-  D --> E["Statistical analysis"]
-  E --> F["Validate conclusions"]
-  F --> G["Report & communicate"]
+flowchart TD
+  A["Specify drug, event and reporting window"] --> B["Retrieve public FAERS records"]
+  B --> C["Check coding, duplicates and missingness"]
+  C --> D["Construct a defined 2×2 count table"]
+  D --> E["Calculate ROR and uncertainty"]
+  E --> F["Sensitivity checks"]
+  F --> G["Report as exploratory signal, not causality"]
 ```
 
-## Learning roadmap
+## Statistics primer
 
-- [ ] **01 · Understand reporting systems** — Learn what adverse-event reports represent—and do not represent
-- [ ] **02 · Retrieve a bounded sample** — Query public API carefully and document the extraction date
-- [ ] **03 · Audit report quality** — Inspect drug naming, event terms, missingness, and duplicates
-- [ ] **04 · Count transparently** — Define drug–event 2×2 tables and comparison sets
-- [ ] **05 · Learn statistics** — Calculate reporting odds ratios and confidence intervals
-- [ ] **06 · Sensitivity checks** — Compare reasonable rules and identify unstable findings
-- [ ] **07 · Communicate responsibly** — Write an exploratory safety surveillance brief
+The proposed first statistic is the **reporting odds ratio (ROR)**. It compares the odds of reporting a chosen event for reports involving a drug against reports involving a comparison group.
 
-<details>
-<summary><strong>📘 What I want to learn</strong> — expand</summary>
+| | Event reported | Other events reported |
+|---|---:|---:|
+| Drug of interest | a | b |
+| Comparison reports | c | d |
 
-- REST APIs, JSON records, pagination and reproducible queries
-- Categorical data, count tables, odds ratios, uncertainty
-- Drug and event standardization and data-quality checks
-- Selection bias, reporting bias, confounding and duplicates
-- Sensitivity analysis and responsible safety communication
-- No unsupported clinical or causal claims
+For positive cell counts, the elementary point estimate is **ROR = (a × d) / (b × c)**. Handling zero cells, uncertainty, duplicate reports, drug roles, and comparison-group definitions requires additional rules, which will be documented before calculating real results.
 
-**Learning rule:** Before adding a method, document what it measures, why it is appropriate, basic assumptions, Python implementation, actual output, and its limitations.
+<details><summary><strong>Why ROR is not an adverse-event probability</strong></summary>
+
+The denominator comes from **reported cases**, not a known population of treated individuals. Publicity, reporting practices, drug usage, missingness, and other biases influence what reaches the database. A large ROR can be interesting for screening, but does not independently identify causation or clinical risk.
 
 </details>
 
-<details>
-<summary><strong>🧪 Validation and reproducibility standards</strong> — expand</summary>
+## Evidence checklist
 
-- Keep original source files immutable and document retrieval dates.
-- Define the unit of observation, inclusion criteria, and outcome variables.
-- Inspect missingness, duplicate records, inconsistent definitions, and potential selection bias.
-- Establish a simple baseline before using more complex models.
-- Separate training and validation information for any predictive analysis; avoid leakage.
-- Record important methodological decisions **before** comparing candidate results.
-- Publish reproducible instructions and dependency versions.
-- Distinguish association, prediction, and causation.
+- [ ] Choose one narrowly defined drug class and event term.
+- [ ] Review the [openFDA drug event API](https://open.fda.gov/apis/drug/event/) fields and FAIR-use constraints.
+- [ ] Record acquisition time and search criteria.
+- [ ] Inspect cases, report versions, duplicates, and naming inconsistencies.
+- [ ] Define drug roles and the comparison group.
+- [ ] Verify cell counts with simple independent checks.
+- [ ] Calculate the ROR with a justified uncertainty method.
+- [ ] Compare alternative inclusion and exclusion rules.
+- [ ] Write a limitations-first, nonclinical interpretation.
 
-</details>
+## Planned analyst deliverables
 
-## Data source
+1. **Data audit:** what was collected, missing, or excluded, with transparent counts.
+2. **Statistical notebook:** explain the 2×2 table, computed quantities, and interpretation.
+3. **Sensitivity analysis:** show whether conclusions depend strongly on reasonable coding decisions.
+4. **Safety-communication brief:** what is worth investigating, what remains unknown, and why.
 
-[openFDA — Drug Adverse Events API](https://open.fda.gov/apis/drug/event/)
+## Interview defense
 
-We will document source URLs, access dates, field definitions, terms of use, and any cleaning rules before producing findings. **Do not commit private or sensitive data.**
+> *“A drug–event pair has a high reporting odds ratio. Does that mean the drug is dangerous?”*
 
-## Proposed repository layout
+An appropriate answer distinguishes a reporting signal from risk and causality, checks the absolute counts and confidence interval, considers reporting biases, and proposes additional investigation instead of an unsupported clinical conclusion.
 
-```text
-SafeSignal/
-├── README.md
-├── data/
-│   └── README.md                 # provenance and download instructions
-├── notebooks/                    # sequential, explainable analyses
-├── sql/                          # SQL queries, where appropriate
-├── figures/                      # verified exported results
-├── results/                      # reproducible outputs
-└── docs/
-    ├── learning_log.md
-    ├── project_decisions.md
-    └── glossary.md
-```
-
-> This is a **target layout**, not a claim that these directories have already been created.
-
-## Expected deliverables
-
-- [ ] Public-data retrieval and audit notebook
-- [ ] Documented, reproducible 2×2 counting logic
-- [ ] Reporting odds ratios with uncertainty and interpretation
-- [ ] Sensitivity analysis of selected drug–event pairs
-- [ ] Nonclinical exploratory safety brief
-
-## Interpretation guardrails
-
-- An adverse-event report does not prove the drug caused an event.
-- Spontaneous reporting data cannot estimate incidence or absolute risk without appropriate denominators.
-- Report counts are influenced by publicity, reporting practices, and duplicate submissions.
-- Disproportionality is a screening signal, not a validated causal association or clinical recommendation.
-
-## Interview case
-
-> **Question a stakeholder might ask:** Does an elevated reporting odds ratio mean this medicine causes the adverse event?
-
-**What this portfolio should demonstrate:** The ability to calculate a statistical screening measure, identify reporting biases and denominator problems, and explain why additional clinical investigation is needed.
-
-<details>
-<summary><strong>🎤 Interview preparation checklist</strong> — expand</summary>
-
-- [ ] Explain the business or research decision in one minute.
-- [ ] Explain data sources, inclusion criteria, and dataset limitations.
-- [ ] Walk through the SQL / Python transformations independently.
-- [ ] Explain why the statistical method or model is appropriate.
-- [ ] Present verified numerical findings (never placeholders).
-- [ ] Describe an alternative explanation and an important limitation.
-- [ ] Explain what a stakeholder could reasonably do next.
-
-</details>
+**Source:** [FDA openFDA Drug Adverse Events](https://open.fda.gov/apis/drug/event/). Reports and definitions require careful handling. Published conclusions will never be inferred from the conceptual diagram.
 
 ---
+<details><summary><strong>Related analytics projects and professional links</strong></summary>
 
-<div align="center">
+- [TrialScope](https://github.com/mbilal-OU/TrialScope) — trial benchmarking and prediction.
+- [PharmaSpend](https://github.com/mbilal-OU/PharmaSpend) — spending analytics and SQL.
+- [Research portfolio](https://mbilal-ou.github.io/portfolio/) — broader computational research profile.
 
-**Part of an industry Data Science learning series**
-
-[TrialScope](https://github.com/mbilal-OU/TrialScope) · [PharmaSpend](https://github.com/mbilal-OU/PharmaSpend) · [SafeSignal](https://github.com/mbilal-OU/SafeSignal)
-
-[Research portfolio](https://mbilal-ou.github.io/portfolio/) · [GitHub profile](https://github.com/mbilal-OU)
-
-<sub>Maintained as a transparent learning and research portfolio. Claims and results will be added only after independent verification.</sub>
-
-</div>
+</details>
